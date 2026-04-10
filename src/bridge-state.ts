@@ -24,6 +24,7 @@ type SourceKind = "directory" | "file";
 type PushSetter = Dispatch<SetStateAction<PushFormState>>;
 type StringSetter = Dispatch<SetStateAction<string>>;
 type PushRequestOptions = { base_url: string; email: string; password: string };
+type LocalSettings = { base_url?: string; admin_email?: string; admin_password?: string };
 
 export type SourceSelection = { kind: SourceKind; path: string };
 export type PreviewAccount = { name?: string; platform?: string; type?: string; extra?: { email?: string }; [key: string]: unknown };
@@ -79,6 +80,7 @@ export function useBridgeState() {
   const [pushLoading, setPushLoading] = useState(false);
   const [cancelPushLoading, setCancelPushLoading] = useState(false);
   const [push, setPush] = useState(DEFAULT_PUSH_FORM);
+  const [settingsReady, setSettingsReady] = useState(false);
   const onPushChange = (field: PushField, value: string) => {
     updatePushField(field, value, setPush, setHealth);
   };
@@ -90,6 +92,35 @@ export function useBridgeState() {
   useEffect(() => {
     getVersion().then(setAppVersion).catch(() => setAppVersion(""));
   }, []);
+
+  // 启动时先从本地 ini 回填连接信息，避免每次重输地址和管理员账号。
+  useEffect(() => {
+    invoke<LocalSettings>("load_local_settings")
+      .then((settings) => {
+        setPush((current) => ({
+          ...current,
+          baseUrl: settings.base_url || current.baseUrl,
+          email: settings.admin_email || "",
+          password: settings.admin_password || "",
+        }));
+      })
+      .catch((error) => setHealth(`读取本地配置失败: ${formatError(error)}`))
+      .finally(() => setSettingsReady(true));
+  }, []);
+
+  // 连接配置变化后自动落到本地 ini，方便下次启动直接回填。
+  useEffect(() => {
+    if (!settingsReady) return;
+    void invoke("save_local_settings", {
+      settings: {
+        base_url: push.baseUrl,
+        admin_email: push.email,
+        admin_password: push.password,
+      },
+    }).catch((error) => {
+      setHealth(`保存本地配置失败: ${formatError(error)}`);
+    });
+  }, [push, settingsReady]);
 
   return {
     appVersion,

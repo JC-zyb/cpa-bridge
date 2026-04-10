@@ -3,6 +3,7 @@ mod commands;
 mod domain;
 mod push;
 mod push_command;
+mod settings;
 
 const APP_ICON_BYTES: &[u8] = include_bytes!("../icons/icon.ico");
 
@@ -27,7 +28,9 @@ pub fn run() {
             commands::conversion::export_cpa_preview_accounts,
             push_command::check_sub2api_connection,
             push_command::cancel_cpa_push,
-            push_command::push_cpa_source_to_sub2api
+            push_command::push_cpa_source_to_sub2api,
+            settings::load_local_settings,
+            settings::save_local_settings
         ])
         .run(build_context())
         .expect("error while running cpa-bridge");
