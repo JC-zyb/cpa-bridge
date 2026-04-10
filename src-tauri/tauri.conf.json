@@ -29,8 +29,10 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "",
-      "endpoints": [],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU5Mzc2Q0UzRjhFN0JGN0EKUldSNnYrZjQ0MnczNlQ1bXJXVnNsWU5FQ1NqY01DMEpNWm1MWkJPanF1R1YzenhCSFdmYll4M0cK",
+      "endpoints": [
+        "https://github.com/JC-zyb/cpa-bridge/releases/latest/download/latest.json"
+      ],
       "windows": {
         "installMode": "passive"
       }
